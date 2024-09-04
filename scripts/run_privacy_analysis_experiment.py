@@ -1,6 +1,7 @@
 import sys
 import argparse
 from pathlib import Path
+from tqdm import tqdm
 main_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(main_dir))
 
@@ -34,7 +35,7 @@ class Experiment:
         """Run the experiment."""
         print(f"Running experiment with model '{self.model_name}' on dataset '{self.dataset_name}'.")
         # Placeholder for actual experiment logic
-        for idx, (img, label, img_path) in enumerate(self.dataloader):
+        for idx, (img, label, img_path) in enumerate(tqdm(self.dataloader)):
             predictions = self.model.predict(img, self.prompt)
             for idy, prediction in enumerate(predictions):
                 self.save_results(prediction, img_path[idy], label[idy])
@@ -113,4 +114,4 @@ if __name__ == "__main__":
     experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens)
     experiment.run()
     experiment.evaluate()
-    experiment.evaluate_per_class()
+    # experiment.evaluate_per_class()

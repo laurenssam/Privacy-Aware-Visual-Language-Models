@@ -160,10 +160,12 @@ def write_to_file(file_path, content):
         print(f"An error occurred while writing to the file: {e}")
 
 def _get_label(file):
-    if "0" in file.stem:
+    if "0" in file.stem[-1]:
         return 0
-    else:
+    elif "1" in file.stem[-1]:
         return 1
+    else:
+        raise Exception("Error with reading the label from the image path")
 
 def _get_class(file):
     split_file_name = file.stem.split("_")[:-2]
