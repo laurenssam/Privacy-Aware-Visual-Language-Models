@@ -3,6 +3,8 @@ from PIL import Image
 from torchvision import transforms
 from pathlib import Path
 
+PRIVATE_CLASSES = ['passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
+
 class PrivBench(Dataset):
     def __init__(self, root_dir, transform=transforms.Resize(240)):
         self.root_dir = Path(root_dir)

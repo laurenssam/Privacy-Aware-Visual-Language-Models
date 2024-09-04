@@ -165,6 +165,16 @@ def _get_label(file):
     else:
         return 1
 
+def _get_class(file):
+    split_file_name = file.stem.split("_")[:-2]
+    if len(split_file_name) == 1:
+        return split_file_name[0]
+    elif len(split_file_name) == 2:
+        return f"{split_file_name[0]}_{split_file_name[1]}"
+    else:
+        raise Exception("Something went wrong with splitting the file name into a class")
+
+
 def evaluate_prediction(prediction):
     if contains_exact_no(prediction):
         return 0
@@ -263,6 +273,10 @@ def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
         "specificity": specificity
     }
 
+def calculate_recall(tp, fn):
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    return recall
+
 def format_evaluation_output(metrics, epoch, counts):
     # Create a list to hold the formatted strings
     output_lines = []
@@ -292,6 +306,33 @@ def format_evaluation_output(metrics, epoch, counts):
 
     # Join all lines into a single string
     return '\n'.join(output_lines)
+
+def format_recall_results(recall_dict):
+    """
+    Formats the recall per class into a nicely structured string.
+
+    Parameters:
+    recall_dict (dict): A dictionary with class names as keys and recall values as values.
+
+    Returns:
+    str: A formatted string showing the recall per class.
+    """
+    # Create a list to hold the formatted strings
+    output_lines = []
+
+    # Header
+    output_lines.append(f"\n{'='*40}")
+    output_lines.append(f"{'Recall Per Class':^40}")
+    output_lines.append(f"{'='*40}\n")
+
+    # Format each class and its recall value
+    for class_name, recall_value in recall_dict.items():
+        output_lines.append(f"{class_name.replace('_', ' ').capitalize():<20}: {recall_value:.2f}")
+
+    # Join all lines into a single string
+    return '\n'.join(output_lines)
+
+
 
 
 
