@@ -167,12 +167,10 @@ def _get_label(file):
     else:
         raise Exception("Error with reading the label from the image path")
 
-def _get_class(file):
-    split_file_name = file.stem.split("_")[:-2]
-    if len(split_file_name) == 1:
-        return split_file_name[0]
-    elif len(split_file_name) == 2:
-        return f"{split_file_name[0]}_{split_file_name[1]}"
+def _get_class(file_name, classes):
+    for class_name in classes:
+        if class_name in file_name:
+            return class_name
     else:
         raise Exception("Something went wrong with splitting the file name into a class")
 

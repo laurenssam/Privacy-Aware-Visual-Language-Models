@@ -22,7 +22,8 @@ class PrivAlert(Dataset):
                     self.negatives += 1
                 if row[1].lower() == "private":
                     self.positives += 1
-        self.images = [file for file in self.img_folder.iterdir() if file.suffix == '.jpg' or file.suffix == ".png"]
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'}
+        self.images = [file for file in self.img_folder.iterdir() if file.suffix.lower() in image_extensions]
         print(f"Number of positives in PrivAlert: {self.positives}")
         print(f"Number of negatives in PrivAlert: {self.negatives}")
         print(f"Number of Images in PrivAlert: {len(self.images)}")
