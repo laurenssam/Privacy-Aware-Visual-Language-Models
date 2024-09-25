@@ -5,7 +5,7 @@ from helpers import keep_after_substring
 
 
 class Fuyu():
-    def __init__(self, args):
+    def __init__(self, temperature, max_new_tokens):
         print("Loading Fuyu")
         # load model and processor
         # model_id = "adept/fuyu-8b"
@@ -23,12 +23,13 @@ class Fuyu():
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.processor = FuyuProcessor(image_processor=FuyuImageProcessor(), tokenizer=self.tokenizer)
         self.start_answer = '\x04'
-        self.args = args
+        self.temperature = temperature
+        self.max_new_tokens = max_new_tokens
 
     def predict(self, list_of_imgs, prompt, in_context_answers=None):
 
         inputs = self.processor(text=prompt, images=list_of_imgs[0]).to(self.device)
-        generation_output = self.model.generate(**inputs, max_new_tokens=self.args.max_new_tokens, temperature=self.args.temperature)
+        generation_output = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens, temperature=self.temperature)
         generation_text = self.processor.batch_decode(generation_output, skip_special_tokens=True)
         generation_text = [keep_after_substring(answer, self.start_answer) for answer in generation_text]
         return generation_text

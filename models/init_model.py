@@ -10,6 +10,9 @@ def init_model(model_name, temperature, max_new_tokens):
     elif model_name.lower() == "coagent":
         from models.coagent import CoAgent
         return CoAgent(temperature, max_new_tokens)
+    elif model_name.lower() == "fuyu":
+        from models.fuyu import Fuyu
+        return Fuyu(temperature, max_new_tokens)
     elif model_name.lower() == "cogvlm":
         from models.cogvlm import CogVLM
         return CogVLM(temperature, max_new_tokens)

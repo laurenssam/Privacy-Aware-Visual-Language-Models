@@ -202,7 +202,7 @@ def evaluate_prediction(prediction):
 
 def test_if_model_works(model, result_folder):
     prompt = "Write a caption for the provided image"
-    response = requests.get("https://dierenparkamersfoort.nl/wp-content/uploads/2018/08/Giraffe123-500x281.jpg")
+    response = requests.get("https://d1jyxxz9imt9yb.cloudfront.net/medialib/4659/image/p1300x1300/AdobeStock_331202050_538219_reduced.webp")
     img_path = result_folder / "test_image.jpg"
     if response.status_code == 200:
         with open(img_path, 'wb') as file:
@@ -220,7 +220,7 @@ def contains_exact_no(text):
     - bool: True if the word 'no' is found as a whole word, False otherwise.
     """
     # Regular expression to match the exact word 'no'
-    return bool(re.search(r'\bno\b', text))
+    return bool(re.search(r'\bno\b', text.lower()))
 
 
 def contains_exact_yes(text):
@@ -234,7 +234,7 @@ def contains_exact_yes(text):
     - bool: True if the word 'yes' is found as a whole word, False otherwise.
     """
     # Regular expression to match the exact word 'yes'
-    return bool(re.search(r'\byes\b', text))
+    return bool(re.search(r'\byes\b', text.lower()))
 
 def assign_confusion_label(prediction, label):
     # False Positive with Reject
