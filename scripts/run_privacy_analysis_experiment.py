@@ -2,6 +2,8 @@ import sys
 import argparse
 from pathlib import Path
 from tqdm import tqdm
+from googletrans import Translator
+
 main_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(main_dir))
 
@@ -13,17 +15,18 @@ from prompts.init_prompt import init_prompt
 from data.init_data import init_data
 
 class Experiment:
-    def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens):
+    def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens, translate):
         self.model_name = model_name
         self.dataset_name = dataset_name
         self.output_folder = create_experiment_folder(output_folder / Path(dataset_name) / Path(model_name))
         self.predictions_folder = self.output_folder / "predictions"
         self.predictions_folder.mkdir(exist_ok=True, parents=True)
         self.prompt = prompt
+        self.translate = translate
         self.dataloader = init_data(self.dataset_name, dataset_path)
         self.model = init_model(self.model_name, temperature, max_new_tokens)
         test_if_model_works(self.model, self.output_folder)
-        self.prompt = init_prompt(prompt)
+        self.prompt = init_prompt(prompt, translate)
         write_to_file(self.output_folder / "prompt.txt", self.prompt)
         self.confusion_matrix = {"tp":0, "tn":0, "fp":0, "fn":0}
         self.rejections = 0
@@ -36,6 +39,9 @@ class Experiment:
         for idx, (img, label, img_path) in enumerate(tqdm(self.dataloader)):
             predictions = self.model.predict(img, self.prompt)
             for idy, prediction in enumerate(predictions):
+                if self.translate and prediction:
+                    translator = Translator()
+                    prediction = translator.translate(prediction, src=self.translate, dest='en').text
                 self.save_results(prediction, img_path[idy], label[idy])
 
 
@@ -104,13 +110,15 @@ def parse_arguments():
                         help="Set the temperature for the Visual Language Model.")
     parser.add_argument('--max_new_tokens', type=int, default=512,
                         help="Max number of tokens the VLM can generate.")
+    parser.add_argument('--translate', type=str, default=None,
+                        help="Language to translate to")
 
     return parser.parse_args()
 
 # Example usage:
 if __name__ == "__main__":
     args = parse_arguments()
-    experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens)
+    experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens, args.translate)
     experiment.run()
     experiment.evaluate()
     if args.dataset_name == "privbench":

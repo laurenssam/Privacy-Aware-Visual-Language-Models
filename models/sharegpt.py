@@ -12,9 +12,6 @@ import os
 os.environ['TRANSFORMERS_CACHE'] = '/var/scratch/lsamson/LLMS'
 os.environ['TORCH_HOME'] = '/var/scratch/lsamson/TORCHHUB'
 
-import torch
-
-from helpers import extract_and_validate_score, keep_after_substring
 
 
 class ShareGPT4V():

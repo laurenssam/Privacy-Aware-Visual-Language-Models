@@ -1,7 +1,7 @@
 from transformers import FuyuProcessor, FuyuForCausalLM, BitsAndBytesConfig, AutoTokenizer, FuyuImageProcessor
 import torch
 
-from helpers import extract_and_validate_score, keep_after_substring
+from helpers import keep_after_substring
 
 
 class Fuyu():

@@ -1,7 +1,5 @@
 import os
-# from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration, BitsAndBytesConfig
 import torch
-from PIL import Image
 os.environ['TRANSFORMERS_CACHE'] = '/var/scratch/lsamson/LLMS'
 os.environ['TORCH_HOME'] = '/var/scratch/lsamson/TORCHHUB'
 
