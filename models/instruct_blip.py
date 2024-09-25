@@ -4,7 +4,6 @@ import torch
 from PIL import Image
 os.environ['TRANSFORMERS_CACHE'] = '/var/scratch/lsamson/LLMS'
 os.environ['TORCH_HOME'] = '/var/scratch/lsamson/TORCHHUB'
-from helpers import keep_after_substring, extract_and_validate_score
 
 from lavis.models import load_model_and_preprocess
 

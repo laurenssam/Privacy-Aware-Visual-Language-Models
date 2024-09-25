@@ -146,6 +146,17 @@ def txt_to_string(file_path):
         content = file.read()
     return content
 
+def keep_after_substring(example_string, sub_string):
+    # Find the index of the substring
+    index = example_string.find(sub_string)
+
+    if index != -1:
+        # Return everything after the substring
+        return example_string[index + len(sub_string):]
+    else:
+        # Return the original string if substring is not found
+        return example_string
+
 def write_to_file(file_path, content):
     """
     Writes a string to a text file. If the file already exists, it will be overwritten.
