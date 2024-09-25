@@ -66,7 +66,7 @@ def create_experiment_folder(base_path):
 
     return new_folder_path
 
-def download_image(url):
+def download_image(url, timeout=None):
     """
     Tries to download images from a given url
     :param url:
@@ -75,8 +75,10 @@ def download_image(url):
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-
-        response = requests.get(url, headers=headers)
+        if timeout:
+            response = requests.get(url, timeout=timeout)
+        else:
+            response = requests.get(url, headers=headers)
         response.raise_for_status()
         img = Image.open(BytesIO(response.content)).convert("RGB")
         return img
@@ -167,12 +169,10 @@ def _get_label(file):
     else:
         raise Exception("Error with reading the label from the image path")
 
-def _get_class(file):
-    split_file_name = file.stem.split("_")[:-2]
-    if len(split_file_name) == 1:
-        return split_file_name[0]
-    elif len(split_file_name) == 2:
-        return f"{split_file_name[0]}_{split_file_name[1]}"
+def _get_class(file_name, classes):
+    for class_name in classes:
+        if class_name in file_name:
+            return class_name
     else:
         raise Exception("Something went wrong with splitting the file name into a class")
 

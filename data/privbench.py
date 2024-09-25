@@ -11,7 +11,9 @@ class PrivBench(Dataset):
         self.transform = transform
         self.classes = ['public', 'passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
         self.private_classes = ['passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
-        self.images = [file for file in self.root_dir.iterdir() if file.suffix == '.jpg']
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'}
+
+        self.images = [file for file in self.root_dir.iterdir() if file.suffix.lower() in image_extensions]
 
     def __len__(self):
         return len(self.images)

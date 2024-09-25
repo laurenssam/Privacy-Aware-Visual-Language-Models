@@ -11,7 +11,6 @@ from helpers import create_experiment_folder, write_to_file, _get_label, evaluat
 from models.init_model import init_model
 from prompts.init_prompt import init_prompt
 from data.init_data import init_data
-from data.privbench import PRIVATE_CLASSES
 
 class Experiment:
     def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens):
@@ -27,7 +26,6 @@ class Experiment:
         self.prompt = init_prompt(prompt)
         write_to_file(self.output_folder / "prompt.txt", self.prompt)
         self.confusion_matrix = {"tp":0, "tn":0, "fp":0, "fn":0}
-        self.class_confusion_matrix = {class_name: {"tp":0, "fn":0} for class_name in PRIVATE_CLASSES}
         self.rejections = 0
 
 
@@ -61,6 +59,7 @@ class Experiment:
         print(pretty_print)
 
     def evaluate_per_class(self):
+        self.class_confusion_matrix = {class_name: {"tp":0, "fn":0} for class_name in PRIVATE_CLASSES}
         negatives = {"tn":0, "fp":0}
         for idx, prediction_path in enumerate(self.predictions_folder.iterdir()):
             label = _get_label(prediction_path)
@@ -69,7 +68,7 @@ class Experiment:
             if label == 0:
                 negatives[confusion_label] += 1
                 continue
-            class_name = _get_class(prediction_path)
+            class_name = _get_class(prediction_path.stem, PRIVATE_CLASSES)
             if prediction == "reject":
                 self.rejections += 1
             self.class_confusion_matrix[class_name][confusion_label] += 1
@@ -114,4 +113,10 @@ if __name__ == "__main__":
     experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens)
     experiment.run()
     experiment.evaluate()
-    # experiment.evaluate_per_class()
+    if args.dataset_name == "privbench":
+        from data.privbench import PRIVATE_CLASSES
+        experiment.evaluate_per_class()
+    elif args.dataset_name == "bivpriv":
+        from data.bivpriv import PRIVATE_CLASSES
+        experiment.evaluate_per_class()
+
