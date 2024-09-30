@@ -9,6 +9,51 @@ from tqdm import tqdm
 import cv2
 import pickle
 
+def in_split_file(split_integers, prediction_path):
+    file_name = prediction_path.stem
+    if "public" in file_name and int(file_name.split("_")[1]) in split_integers:
+        return True
+    else:
+        return False
+
+def list_to_file(int_list, filename):
+    """
+    Writes a list of integers to a text file, one integer per line.
+
+    :param int_list: List of integers to write.
+    :param filename: Name of the file to write to.
+    """
+    try:
+        with open(filename, 'w') as file:
+            for number in int_list:
+                file.write(f"{number}\n")
+    except IOError as e:
+        print(f"An error occurred while writing to the file: {e}")
+
+def file_to_list(filename):
+    """
+    Reads a text file containing integers (one per line) and returns a list of integers.
+
+    :param filename: Name of the file to read from.
+    :return: List of integers read from the file.
+    """
+    int_list = []
+    try:
+        with open(filename, 'r') as file:
+            for line_number, line in enumerate(file, start=1):
+                stripped_line = line.strip()
+                if stripped_line:  # Skip empty lines
+                    try:
+                        number = int(stripped_line)
+                        int_list.append(number)
+                    except ValueError:
+                        print(f"Warning: Line {line_number} ('{stripped_line}') is not a valid integer and will be skipped.")
+    except FileNotFoundError:
+        print(f"The file '{filename}' does not exist.")
+    except IOError as e:
+        print(f"An error occurred while reading the file: {e}")
+    return int_list
+
 def save_pickle(obj, filename):
     """
     Save a Python object to a pickle file.
@@ -290,32 +335,33 @@ def calculate_recall(tp, fn):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     return recall
 
-def format_evaluation_output(metrics, epoch, counts):
+def format_evaluation_output(metrics, class_name="All", rejections=None, counts=None):
     # Create a list to hold the formatted strings
     output_lines = []
 
     # Header
     output_lines.append(f"\n{'='*40}")
-    output_lines.append(f"{'Evaluation Metrics':^40}")
+    output_lines.append(f"{f'Evaluation Metrics {class_name}: ':^40}")
     output_lines.append(f"{'='*40}\n")
 
     # Metrics
     for metric, value in metrics.items():
         output_lines.append(f"{metric.capitalize():<15}: {value:.4f}")
+    if counts:
+        # Confusion Matrix Section
+        output_lines.append(f"\n{'-'*40}")
+        output_lines.append(f"{'Confusion Matrix':^40}")
+        output_lines.append(f"{'-'*40}\n")
 
-    # Confusion Matrix Section
-    output_lines.append(f"\n{'-'*40}")
-    output_lines.append(f"{'Confusion Matrix':^40}")
-    output_lines.append(f"{'-'*40}\n")
+        # Counts
+        for count, value in counts.items():
+            output_lines.append(f"{count.upper():<15}: {value}")
 
-    # Counts
-    for count, value in counts.items():
-        output_lines.append(f"{count.upper():<15}: {value}")
-
-    # Epoch
-    output_lines.append(f"\n{'-'*40}")
-    output_lines.append(f"{'Number of Rejections':<15}: {epoch}")
-    output_lines.append(f"{'='*40}\n")
+    if rejections:
+        # Epoch
+        output_lines.append(f"\n{'-'*40}")
+        output_lines.append(f"{'Number of Rejections':<15}: {rejections}")
+        output_lines.append(f"{'='*40}\n")
 
     # Join all lines into a single string
     return '\n'.join(output_lines)

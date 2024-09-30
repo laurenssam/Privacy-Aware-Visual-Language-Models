@@ -3,22 +3,28 @@ import argparse
 from pathlib import Path
 from tqdm import tqdm
 from googletrans import Translator
+import numpy as np
+from copy import deepcopy
 
 main_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(main_dir))
 
 from helpers import create_experiment_folder, write_to_file, _get_label, evaluate_prediction, assign_confusion_label, \
     calculate_metrics_from_confusion_matrix, txt_to_string, format_evaluation_output, test_if_model_works, save_pickle, \
-    _get_class, calculate_recall, format_recall_results
+    _get_class, calculate_recall, format_recall_results, file_to_list, in_split_file
 from models.init_model import init_model
 from prompts.init_prompt import init_prompt
 from data.init_data import init_data
+
+
+
 
 class Experiment:
     def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens, translate):
         self.model_name = model_name
         self.dataset_name = dataset_name
         self.output_folder = create_experiment_folder(output_folder / Path(dataset_name) / Path(model_name))
+        self.split_folder = dataset_path.parent / "splits"
         self.predictions_folder = self.output_folder / "predictions"
         self.predictions_folder.mkdir(exist_ok=True, parents=True)
         self.prompt = prompt
@@ -59,36 +65,45 @@ class Experiment:
             confusion_label = assign_confusion_label(prediction, label)
             self.confusion_matrix[confusion_label] += 1
         metrics = calculate_metrics_from_confusion_matrix(self.confusion_matrix['tp'], self.confusion_matrix['fp'], self.confusion_matrix['fn'], self.confusion_matrix['tn'])
-        pretty_print = format_evaluation_output(metrics, self.rejections, self.confusion_matrix)
+        pretty_print = format_evaluation_output(metrics, "All Classes", self.rejections, self.confusion_matrix)
         write_to_file(self.output_folder / "metrics.txt", pretty_print)
         save_pickle({"metrics":metrics, "rejections":self.rejections, "confusion_matrix":self.confusion_matrix}, self.output_folder / "metrics.pickle")
         print(pretty_print)
 
     def evaluate_per_class(self):
-        self.class_confusion_matrix = {class_name: {"tp":0, "fn":0} for class_name in PRIVATE_CLASSES}
-        negatives = {"tn":0, "fp":0}
-        for idx, prediction_path in enumerate(self.predictions_folder.iterdir()):
-            label = _get_label(prediction_path)
-            prediction = evaluate_prediction(txt_to_string(prediction_path))
-            confusion_label = assign_confusion_label(prediction, label)
-            if label == 0:
-                negatives[confusion_label] += 1
-                continue
-            class_name = _get_class(prediction_path.stem, PRIVATE_CLASSES)
-            if prediction == "reject":
-                self.rejections += 1
-            self.class_confusion_matrix[class_name][confusion_label] += 1
+        score_dict = {"precision": [], "recall": [], "f1_score": [], "accuracy": [], "specificity": []}
+        scores_per_class =  {class_name: deepcopy(score_dict) for class_name in PRIVATE_CLASSES}
+        for split_file in self.split_folder.glob("*.txt"):
+            split_integers = file_to_list(split_file)
+            per_split_class_confusion_matrix = {class_name: {"tp": 0, "fn": 0} for class_name in PRIVATE_CLASSES}
+            per_split_negatives = {"tn": 0, "fp": 0}
+            for idx, prediction_path in enumerate(self.predictions_folder.iterdir()):
+                label = _get_label(prediction_path)
+                prediction = evaluate_prediction(txt_to_string(prediction_path))
+                confusion_label = assign_confusion_label(prediction, label)
+                if label == 0 and not in_split_file(split_integers, prediction_path):
+                    continue
+                elif label == 0:
+                    per_split_negatives[confusion_label] += 1
+                    continue
+                else:
+                    class_name = _get_class(prediction_path.stem, PRIVATE_CLASSES)
+                    if prediction == "reject":
+                        self.rejections += 1
+                    per_split_class_confusion_matrix[class_name][confusion_label] += 1
+            # print(per_split_class_confusion_matrix | per_split_negatives)
+            for class_name, confusion_matrix in per_split_class_confusion_matrix.items():
+                metrics_per_class = calculate_metrics_from_confusion_matrix(confusion_matrix['tp'], per_split_negatives['fp'], confusion_matrix['fn'], per_split_negatives['tn'])
+                for metric, score in metrics_per_class.items():
+                    scores_per_class[class_name][metric].append(score)
 
-        metrics_all_class = {}
-        for class_name, confusion_matrix in self.class_confusion_matrix.items():
-            metrics_per_class = calculate_metrics_from_confusion_matrix(confusion_matrix['tp'], negatives['fp'], confusion_matrix['fn'], negatives['tn'])
-            metrics_all_class[class_name] = metrics_per_class
-            pretty_print = format_evaluation_output(metrics_per_class, self.rejections, confusion_matrix | negatives)
+        for class_name, scores_dict in scores_per_class.items():
+            for metric, scores in scores_dict.items():
+                scores_per_class[class_name][metric] = np.mean(scores)
+            pretty_print = format_evaluation_output(scores_per_class[class_name], class_name)
             write_to_file(self.output_folder / f"metrics_{class_name}.txt", pretty_print)
-            print(class_name)
             print(pretty_print)
-        save_pickle({"metrics": metrics_all_class, "rejections": self.rejections, "confusion_matrix": self.class_confusion_matrix},
-                        self.output_folder / "metrics_per_class.pickle")
+        save_pickle({"metrics": scores_per_class}, self.output_folder / "metrics_per_class.pickle")
 
 
 
@@ -100,7 +115,7 @@ def parse_arguments():
     parser.add_argument('--model_name', type=str, default="moellava", help="Name of the model to be used in the experiment.")
     parser.add_argument('--dataset_name', type=str, default="privbench",
                         help="Name of the dataset to be used in the experiment.")
-    parser.add_argument('--dataset_path', type=str, required=True,
+    parser.add_argument('--dataset_path', type=Path, required=True,
                         help="Path of the dataset to be used in the experiment.")
     parser.add_argument('--output_folder', type=Path, default="results",
                         help="Folder where the experiment output will be saved.")
