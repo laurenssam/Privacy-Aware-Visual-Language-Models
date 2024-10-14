@@ -318,7 +318,7 @@ def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
     # Calculate metrics
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1_score = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
     accuracy = (tp + tn) / (tp + fp + fn + tn) if (tp + fp + fn + tn) > 0 else 0
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
 

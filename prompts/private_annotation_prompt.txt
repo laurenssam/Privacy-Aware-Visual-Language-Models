@@ -1,0 +1,85 @@
+I'm working on research to make Visual Large Language Models more privacy-aware of the images it sees. Visual Large Language Models take as input text and images and only output text, they don't generate images. To accomplish this, I need to fine-tune a model with annotations to make it understand what privacy in visual data means.
+I need your help to get these annotations.
+I provide you with a sensitive image (containing personal information), a unique id, and the privacy score. I want you to create a multi-turn dialogue, where the first answer of the gpt always contains an explanation why the image is public or private "This images does not contain private information, because {explanation}."
+Privacy scores:
+0: Image does not contain private information
+1: Image contains private information
+
+In case of private samples, you can see from the image name why this case is considered private.
+
+Here is an example:
+Id: 1
+Image: debit_card_1.jpg
+Privacy score: 1
+
+Design a conversation between you and a person asking about this photo. The answers should be in a tone that a visual AI assistant is seeing the image and answering the question. Ask diverse questions and give corresponding answers.
+I need a multi-turn dialogue in JSON format with the following constraints:
+
+GPT answers :
+1. Answer the question of the user
+2. Explain to the user why the provided image might be private or not. Mention which details on the image are private.
+
+In all follow-up answers, minimal 2 extra questions, repeat, in a natural way, why the image is considered private or not.
+
+Human answers:
+Include questions asking about the visual content of the image, including the object types, counting the objects, object actions, object locations, relative positions between objects, etc. Only include questions that have definite answers:
+(1) one can see the content in the image that the question asks about and can answer confidently;
+(2) one can determine confidently from the image that it is not in the image. Do not ask any question that cannot be answered confidently.
+
+And most important, also include diverse questions regarding privacy concerns in the image.
+
+{
+    "id": "0112",
+    "image": "passport_12.jpg",
+    "privacy_score": 5,
+    "conversations": [
+      {
+        "from": "human",
+        "value": "My passport is damaged as you can see in this image. Is it still valid?"
+      },
+      {
+        "from": "gpt",
+        "value": "A damaged passport might not be considered valid for travel, especially if the damage affects the data page or the machine-readable zone. You should contact the issuing authority for confirmation. The image contains sensitive personal information, including your full name, date of birth, passport number, and photograph, which should not be shared publicly to prevent identity theft."
+      },
+      {
+        "from": "human",
+        "value": "What kind of damage makes a passport invalid?"
+      },
+      {
+        "from": "gpt",
+        "value": "Significant damage such as water damage, significant tears, or alterations to the personal data page can render a passport invalid. It's crucial to protect such personal information, as seen in the image, from being shared to maintain privacy."
+      },
+      {
+        "from": "human",
+        "value": "How can I get a new passport?"
+      },
+      {
+        "from": "gpt",
+        "value": "To get a new passport, you'll need to apply for a replacement through the official government passport agency or consulate, providing the necessary documentation and following their procedures. Remember to safeguard your personal data during the process."
+      }
+    ]
+  }
+
+Now please help me with the following sample, I want exactly the same format as above so that I can use it without modifying your output.
+
+Id: ID
+Image: IMAGE_NAME
+Privacy score: PRIVACY_SCORE
+
+Design a conversation between you and a person asking about this photo. The answers should be in a tone that a visual AI assistant is seeing the image and answering the question. Ask diverse questions and give corresponding answers.
+I need a multi-turn dialogue in JSON format with the following constraints:
+
+GPT answers :
+1. Answer the question of the user
+2. Explain to the user why the provided image might be private or not
+
+In all follow-up answers, minimal 2 extra questions, repeat, in a natural way, why the image is considered private or not.
+
+Human answers:
+Include questions asking about the visual content of the image, including the object types, counting the objects, object actions, object locations, relative positions between objects, etc. Only include questions that have definite answers:
+(1) one can see the content in the image that the question asks about and can answer confidently;
+(2) one can determine confidently from the image that it is not in the image. Do not ask any question that cannot be answered confidently.
+
+And most important, also include diverse questions regarding privacy concerns in the image.
+
+Starting question: 'List everything that you see on this picture'

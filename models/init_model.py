@@ -1,6 +1,6 @@
 
 
-def init_model(model_name, temperature, max_new_tokens):
+def init_model(model_name, temperature=0, max_new_tokens=512, tl_model=None):
     if model_name.lower() == "moellava":
         from models.moellava import MoeLLava
         return MoeLLava(temperature, max_new_tokens)
@@ -30,4 +30,4 @@ def init_model(model_name, temperature, max_new_tokens):
         return ShareGPT4V(temperature, max_new_tokens)
     elif model_name.lower() == "tinyllava":
         from models.tiny_llava import TinyLlaVa
-        return TinyLlaVa(temperature, max_new_tokens)
+        return TinyLlaVa(temperature, max_new_tokens, tl_model)

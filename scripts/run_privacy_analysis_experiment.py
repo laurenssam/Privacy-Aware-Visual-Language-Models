@@ -5,6 +5,7 @@ from tqdm import tqdm
 from googletrans import Translator
 import numpy as np
 from copy import deepcopy
+from PIL import Image
 
 main_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(main_dir))
@@ -20,7 +21,7 @@ from data.init_data import init_data
 
 
 class Experiment:
-    def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens, translate):
+    def __init__(self, model_name, dataset_name, dataset_path, output_folder, prompt, temperature, max_new_tokens, translate, tl_model):
         self.model_name = model_name
         self.dataset_name = dataset_name
         self.output_folder = create_experiment_folder(output_folder / Path(dataset_name) / Path(model_name))
@@ -30,7 +31,7 @@ class Experiment:
         self.prompt = prompt
         self.translate = translate
         self.dataloader = init_data(self.dataset_name, dataset_path)
-        self.model = init_model(self.model_name, temperature, max_new_tokens)
+        self.model = init_model(self.model_name, temperature, max_new_tokens, tl_model)
         test_if_model_works(self.model, self.output_folder)
         self.prompt = init_prompt(prompt, translate)
         write_to_file(self.output_folder / "prompt.txt", self.prompt)
@@ -54,10 +55,13 @@ class Experiment:
     def save_results(self, prediction, img_path, label):
         """Save experiment results to the output folder."""
         result_path = self.predictions_folder / f"{img_path.stem}_{0 if label == 'public' else 1}.txt"
+        Image.open(img_path).save(self.predictions_folder / img_path.name)
         write_to_file(result_path, prediction)
 
     def evaluate(self):
         for idx, prediction in enumerate(self.predictions_folder.iterdir()):
+            if prediction.suffix != ".txt":
+                continue
             label = _get_label(prediction)
             prediction = evaluate_prediction(txt_to_string(prediction))
             if prediction == "reject":
@@ -78,6 +82,8 @@ class Experiment:
             per_split_class_confusion_matrix = {class_name: {"tp": 0, "fn": 0} for class_name in PRIVATE_CLASSES}
             per_split_negatives = {"tn": 0, "fp": 0}
             for idx, prediction_path in enumerate(self.predictions_folder.iterdir()):
+                if prediction_path.suffix != ".txt":
+                    continue
                 label = _get_label(prediction_path)
                 prediction = evaluate_prediction(txt_to_string(prediction_path))
                 confusion_label = assign_confusion_label(prediction, label)
@@ -127,13 +133,15 @@ def parse_arguments():
                         help="Max number of tokens the VLM can generate.")
     parser.add_argument('--translate', type=str, default=None,
                         help="Language to translate to")
+    parser.add_argument('--tl_model', type=str, default=None,
+                        help="finetuned tinyllava model")
 
     return parser.parse_args()
 
 # Example usage:
 if __name__ == "__main__":
     args = parse_arguments()
-    experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens, args.translate)
+    experiment = Experiment(args.model_name, args.dataset_name, args.dataset_path, args.output_folder, args.prompt, args.temperature, args.max_new_tokens, args.translate, args.tl_model)
     experiment.run()
     experiment.evaluate()
     if args.dataset_name == "privbench":
