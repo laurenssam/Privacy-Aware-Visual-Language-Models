@@ -1,0 +1,2 @@
+Analyze the image provided. Does the attached image contain private information?
+Answer only with yes or no.
