@@ -138,6 +138,14 @@ def collate_fn(batch):
 
     return list(images), list(labels), list(paths)
 
+
+def collate_fn_places(batch):
+    # Unpack the batch into three separate lists: one for the lists of items, one for labels, and one for paths
+    images, labels = zip(*batch)
+
+    # Since lists is already a list of lists, we don't need to do much else here
+
+    return list(images), list(labels)
 # Usage in DataLoader
 # Assuming your dataset is called MyDataset
 # dataloader = DataLoader(MyDataset(...), batch_size=32, collate_fn=collate_fn)
@@ -187,7 +195,7 @@ def txt_to_string(file_path):
     Returns:
     str: The content of the file as a string.
     """
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, encoding="utf8") as file:
         content = file.read()
     return content
 
@@ -237,10 +245,6 @@ def evaluate_prediction(prediction):
     if contains_exact_no(prediction):
         return 0
     if contains_exact_yes(prediction):
-        return 1
-    if "2" in prediction:
-        return 0
-    if "1" in prediction:
         return 1
     else:
         return "reject"
@@ -301,6 +305,16 @@ def assign_confusion_label(prediction, label):
     if prediction == 0 and label == 0:
         return "tn"
 
+def get_places_classes_cleaned(places_dataset):
+    class_names, class2idx = places_dataset.classes, places_dataset.class_to_idx
+    new_class_names, new_class2idx = [], {}
+    for (class_name, idx) in class2idx.items():
+        new_class_name = class_name[3:].replace("/", "_")
+        new_class2idx[new_class_name] = idx
+    for class_name in class_names:
+        new_class_name = class_name[3:].replace("/", "_")
+        new_class_names.append(new_class_name)
+    return new_class_names, new_class2idx
 
 def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
     """

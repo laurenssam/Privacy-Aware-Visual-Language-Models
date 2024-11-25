@@ -62,12 +62,16 @@ class Experiment:
         for idx, prediction in enumerate(self.predictions_folder.iterdir()):
             if prediction.suffix != ".txt":
                 continue
+            elif self.model_name == "chatgpt" and "nudity" in prediction.stem:
+                continue
             label = _get_label(prediction)
-            prediction = evaluate_prediction(txt_to_string(prediction))
+            prediction_score = evaluate_prediction(txt_to_string(prediction))
             if prediction == "reject":
                 self.rejections += 1
-            confusion_label = assign_confusion_label(prediction, label)
+            confusion_label = assign_confusion_label(prediction_score, label)
             self.confusion_matrix[confusion_label] += 1
+
+
         metrics = calculate_metrics_from_confusion_matrix(self.confusion_matrix['tp'], self.confusion_matrix['fp'], self.confusion_matrix['fn'], self.confusion_matrix['tn'])
         pretty_print = format_evaluation_output(metrics, "All Classes", self.rejections, self.confusion_matrix)
         write_to_file(self.output_folder / "metrics.txt", pretty_print)
@@ -97,7 +101,6 @@ class Experiment:
                     if prediction == "reject":
                         self.rejections += 1
                     per_split_class_confusion_matrix[class_name][confusion_label] += 1
-            # print(per_split_class_confusion_matrix | per_split_negatives)
             for class_name, confusion_matrix in per_split_class_confusion_matrix.items():
                 metrics_per_class = calculate_metrics_from_confusion_matrix(confusion_matrix['tp'], per_split_negatives['fp'], confusion_matrix['fn'], per_split_negatives['tn'])
                 for metric, score in metrics_per_class.items():

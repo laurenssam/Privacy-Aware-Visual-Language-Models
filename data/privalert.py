@@ -4,6 +4,7 @@ from torchvision import transforms
 from pathlib import Path
 import csv
 
+PRIVATE_CLASSES = ["private"]
 
 class PrivAlert(Dataset):
     def __init__(self, root_dir, transform=transforms.Resize(240)):
