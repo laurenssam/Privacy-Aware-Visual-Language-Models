@@ -105,12 +105,14 @@ Due to the sensitive nature of the images in our dataset, access is restricted t
 
 # Citation
 If you use our work in your research, please cite it as follows:
+```bibtex
 @article{samson2024privacy,
   title={Privacy-Aware Visual Language Models},
   author={Samson, Laurens and Barazani, Nimrod and Ghebreab, Sennay and Asano, Yuki M},
   journal={arXiv preprint arXiv:2405.17423},
   year={2024}
 }
+```
 
 
 
