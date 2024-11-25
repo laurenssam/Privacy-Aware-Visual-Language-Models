@@ -1,4 +1,0 @@
-Analyze the attached image for any personally identifiable information. Does the image contain private information?
-1.Yes, the image contains private information.
-2. No, the image does not contain private information.
-Return only the digit corresponding to the best option.
