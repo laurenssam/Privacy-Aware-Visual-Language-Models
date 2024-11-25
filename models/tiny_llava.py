@@ -16,16 +16,18 @@ from tinyllava.mm_utils import (
     process_images,
     tokenizer_image_token,
     get_model_name_from_path,
-    KeywordsStoppingCriteria)
+    KeywordsStoppingCriteria,
+)
 
 
-os.environ['TRANSFORMERS_CACHE'] = '/var/scratch/lsamson/LLMS'
-os.environ['TORCH_HOME'] = '/var/scratch/lsamson/TORCHHUB'
+os.environ["TRANSFORMERS_CACHE"] = "/var/scratch/lsamson/LLMS"
+os.environ["TORCH_HOME"] = "/var/scratch/lsamson/TORCHHUB"
 
-class TinyLlaVa():
+
+class TinyLlaVa:
     def __init__(self, temperature, max_new_tokens, tl_model=None):
         print("Loading CoAgent")
-        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.temperature = temperature
         self.max_new_tokens = max_new_tokens
         self.model_base = "bczhou/TinyLLaVA-3.1B" if tl_model else None
@@ -38,14 +40,18 @@ class TinyLlaVa():
         disable_torch_init()
         # self.model_path = "/var/scratch/lsamson/LLMS/TinyLLaVa_Privacy_Aware/"
 
-        self.tokenizer, self.model, self.image_processor, self.context_len = load_pretrained_model(
-            model_path=self.model_path,
-            model_base=self.model_base,
-            model_name=get_model_name_from_path(self.model_path))
-
+        self.tokenizer, self.model, self.image_processor, self.context_len = (
+            load_pretrained_model(
+                model_path=self.model_path,
+                model_base=self.model_base,
+                model_name=get_model_name_from_path(self.model_path),
+            )
+        )
 
     def predict(self, imgs, prompt, in_context_answers=None):
-        image_token_se = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN
+        image_token_se = (
+            DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN
+        )
         if IMAGE_PLACEHOLDER in prompt:
             if self.model.config.mm_use_im_start_end:
                 prompt = re.sub(IMAGE_PLACEHOLDER, image_token_se, prompt)
@@ -57,27 +63,28 @@ class TinyLlaVa():
             else:
                 prompt = DEFAULT_IMAGE_TOKEN + "\n" + prompt
 
-
         conv_mode = "phi"
         conv = conv_templates[conv_mode].copy()
         conv.append_message(conv.roles[0], prompt)
         conv.append_message(conv.roles[1], None)
         prompt = conv.get_prompt()
         images_tensor = process_images(
-            imgs,
-            self.image_processor,
-            self.model.config
+            imgs, self.image_processor, self.model.config
         ).to(self.model.device, dtype=torch.float16)
 
         input_ids = (
-            tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt")
+            tokenizer_image_token(
+                prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt"
+            )
             .unsqueeze(0)
             .cuda()
         )
 
         stop_str = conv.sep if conv.sep_style != SeparatorStyle.TWO else conv.sep2
         keywords = [stop_str]
-        stopping_criteria = KeywordsStoppingCriteria(keywords, self.tokenizer, input_ids)
+        stopping_criteria = KeywordsStoppingCriteria(
+            keywords, self.tokenizer, input_ids
+        )
         if len(imgs) > 1:
             input_ids = input_ids.repeat(len(imgs), 1)
 
@@ -92,9 +99,7 @@ class TinyLlaVa():
                 use_cache=True,
                 stopping_criteria=[stopping_criteria],
             )
-        outputs = self.tokenizer.batch_decode(
-            output_ids, skip_special_tokens=True
-        )
+        outputs = self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)
         all_outputs = []
         for output in outputs:
             output = output.strip()
@@ -103,6 +108,3 @@ class TinyLlaVa():
             output = output.strip()
             all_outputs.append(output)
         return all_outputs
-
-
-

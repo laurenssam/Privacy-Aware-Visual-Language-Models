@@ -3,17 +3,50 @@ from PIL import Image
 from torchvision import transforms
 from pathlib import Path
 
-PRIVATE_CLASSES = ['passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
+PRIVATE_CLASSES = [
+    "passport",
+    "face",
+    "tattoo",
+    "debit_card",
+    "license_plate",
+    "nudity",
+    "private_chat",
+    "fingerprint",
+]
+
 
 class PrivBench(Dataset):
     def __init__(self, root_dir, transform=transforms.Resize(240)):
         self.root_dir = Path(root_dir)
         self.transform = transform
-        self.classes = ['public', 'passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
-        self.private_classes = ['passport', 'face', 'tattoo', 'debit_card', 'license_plate', 'nudity', 'private_chat', 'fingerprint']
-        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'}
+        self.classes = [
+            "public",
+            "passport",
+            "face",
+            "tattoo",
+            "debit_card",
+            "license_plate",
+            "nudity",
+            "private_chat",
+            "fingerprint",
+        ]
+        self.private_classes = [
+            "passport",
+            "face",
+            "tattoo",
+            "debit_card",
+            "license_plate",
+            "nudity",
+            "private_chat",
+            "fingerprint",
+        ]
+        image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"}
 
-        self.images = [file for file in self.root_dir.iterdir() if file.suffix.lower() in image_extensions]
+        self.images = [
+            file
+            for file in self.root_dir.iterdir()
+            if file.suffix.lower() in image_extensions
+        ]
 
     def __len__(self):
         return len(self.images)
@@ -29,7 +62,7 @@ class PrivBench(Dataset):
         if "public" in file_name.lower():
             label = f"public"
         else:
-            label = file_name[:file_name.rfind("_")]
+            label = file_name[: file_name.rfind("_")]
             if label not in self.classes:
                 print(label, self.classes)
                 raise Exception("Classname incorrect")
@@ -37,4 +70,3 @@ class PrivBench(Dataset):
         if self.transform:
             image = self.transform(image)
         return image, label, img_path
-

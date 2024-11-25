@@ -9,12 +9,14 @@ from tqdm import tqdm
 import cv2
 import pickle
 
+
 def in_split_file(split_integers, prediction_path):
     file_name = prediction_path.stem
     if "public" in file_name and int(file_name.split("_")[1]) in split_integers:
         return True
     else:
         return False
+
 
 def list_to_file(int_list, filename):
     """
@@ -24,11 +26,12 @@ def list_to_file(int_list, filename):
     :param filename: Name of the file to write to.
     """
     try:
-        with open(filename, 'w') as file:
+        with open(filename, "w") as file:
             for number in int_list:
                 file.write(f"{number}\n")
     except IOError as e:
         print(f"An error occurred while writing to the file: {e}")
+
 
 def file_to_list(filename):
     """
@@ -39,7 +42,7 @@ def file_to_list(filename):
     """
     int_list = []
     try:
-        with open(filename, 'r') as file:
+        with open(filename, "r") as file:
             for line_number, line in enumerate(file, start=1):
                 stripped_line = line.strip()
                 if stripped_line:  # Skip empty lines
@@ -47,12 +50,15 @@ def file_to_list(filename):
                         number = int(stripped_line)
                         int_list.append(number)
                     except ValueError:
-                        print(f"Warning: Line {line_number} ('{stripped_line}') is not a valid integer and will be skipped.")
+                        print(
+                            f"Warning: Line {line_number} ('{stripped_line}') is not a valid integer and will be skipped."
+                        )
     except FileNotFoundError:
         print(f"The file '{filename}' does not exist.")
     except IOError as e:
         print(f"An error occurred while reading the file: {e}")
     return int_list
+
 
 def save_pickle(obj, filename):
     """
@@ -62,8 +68,9 @@ def save_pickle(obj, filename):
     obj (any): The Python object to be pickled.
     filename (str): The path to the file where the object will be saved.
     """
-    with open(filename, 'wb') as file:
+    with open(filename, "wb") as file:
         pickle.dump(obj, file)
+
 
 def load_pickle(filename):
     """
@@ -75,7 +82,7 @@ def load_pickle(filename):
     Returns:
     any: The Python object that was loaded from the pickle file.
     """
-    with open(filename, 'rb') as file:
+    with open(filename, "rb") as file:
         obj = pickle.load(file)
     return obj
 
@@ -111,6 +118,7 @@ def create_experiment_folder(base_path):
 
     return new_folder_path
 
+
 def download_image(url, timeout=None):
     """
     Tries to download images from a given url
@@ -119,7 +127,8 @@ def download_image(url, timeout=None):
     """
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
+        }
         if timeout:
             response = requests.get(url, timeout=timeout)
         else:
@@ -129,6 +138,7 @@ def download_image(url, timeout=None):
         return img
     except Exception as e:
         return None
+
 
 def collate_fn(batch):
     # Unpack the batch into three separate lists: one for the lists of items, one for labels, and one for paths
@@ -146,9 +156,12 @@ def collate_fn_places(batch):
     # Since lists is already a list of lists, we don't need to do much else here
 
     return list(images), list(labels)
+
+
 # Usage in DataLoader
 # Assuming your dataset is called MyDataset
 # dataloader = DataLoader(MyDataset(...), batch_size=32, collate_fn=collate_fn)
+
 
 def load_feature(file):
     return np.load(file)
@@ -168,13 +181,15 @@ def remove_padding(image_path, output_path):
     _, binary_mask = cv2.threshold(inverted_gray, 1, 255, cv2.THRESH_BINARY)
 
     # Find contours of the non-zero areas
-    contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
 
     # Get the bounding box of the largest contour
     x, y, w, h = cv2.boundingRect(contours[0])
 
     # Crop the image using the bounding box
-    cropped_image = image[y:y + h, x:x + w]
+    cropped_image = image[y : y + h, x : x + w]
 
     # Save the cropped image
     cv2.imwrite(output_path, cropped_image)
@@ -185,6 +200,8 @@ def load_features_in_parallel(files, num_workers):
         # Use imap_unordered for parallel processing with a progress bar
         results = list(tqdm(pool.imap(load_feature, files), total=len(files)))
     return results
+
+
 def txt_to_string(file_path):
     """
     Converts the content of a text file into a string.
@@ -199,16 +216,18 @@ def txt_to_string(file_path):
         content = file.read()
     return content
 
+
 def keep_after_substring(example_string, sub_string):
     # Find the index of the substring
     index = example_string.find(sub_string)
 
     if index != -1:
         # Return everything after the substring
-        return example_string[index + len(sub_string):]
+        return example_string[index + len(sub_string) :]
     else:
         # Return the original string if substring is not found
         return example_string
+
 
 def write_to_file(file_path, content):
     """
@@ -225,6 +244,7 @@ def write_to_file(file_path, content):
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")
 
+
 def _get_label(file):
     if "0" in file.stem[-1]:
         return 0
@@ -233,12 +253,15 @@ def _get_label(file):
     else:
         raise Exception("Error with reading the label from the image path")
 
+
 def _get_class(file_name, classes):
     for class_name in classes:
         if class_name in file_name:
             return class_name
     else:
-        raise Exception("Something went wrong with splitting the file name into a class")
+        raise Exception(
+            "Something went wrong with splitting the file name into a class"
+        )
 
 
 def evaluate_prediction(prediction):
@@ -249,15 +272,20 @@ def evaluate_prediction(prediction):
     else:
         return "reject"
 
+
 def test_if_model_works(model, result_folder):
     prompt = "Write a caption for the provided image"
-    response = requests.get("https://d1jyxxz9imt9yb.cloudfront.net/medialib/4659/image/p1300x1300/AdobeStock_331202050_538219_reduced.webp")
+    response = requests.get(
+        "https://d1jyxxz9imt9yb.cloudfront.net/medialib/4659/image/p1300x1300/AdobeStock_331202050_538219_reduced.webp"
+    )
     img_path = result_folder / "test_image.jpg"
     if response.status_code == 200:
-        with open(img_path, 'wb') as file:
+        with open(img_path, "wb") as file:
             file.write(response.content)
     answer = model.predict([Image.open(img_path)], prompt)
     write_to_file(result_folder / "test_answer.txt", answer[0])
+
+
 def contains_exact_no(text):
     """
     Checks if the string contains the exact word 'no', without allowing matches with words like 'nobody', 'norm', etc.
@@ -269,7 +297,7 @@ def contains_exact_no(text):
     - bool: True if the word 'no' is found as a whole word, False otherwise.
     """
     # Regular expression to match the exact word 'no'
-    return bool(re.search(r'\bno\b', text.lower()))
+    return bool(re.search(r"\bno\b", text.lower()))
 
 
 def contains_exact_yes(text):
@@ -283,7 +311,8 @@ def contains_exact_yes(text):
     - bool: True if the word 'yes' is found as a whole word, False otherwise.
     """
     # Regular expression to match the exact word 'yes'
-    return bool(re.search(r'\byes\b', text.lower()))
+    return bool(re.search(r"\byes\b", text.lower()))
+
 
 def assign_confusion_label(prediction, label):
     # False Positive with Reject
@@ -305,16 +334,18 @@ def assign_confusion_label(prediction, label):
     if prediction == 0 and label == 0:
         return "tn"
 
+
 def get_places_classes_cleaned(places_dataset):
     class_names, class2idx = places_dataset.classes, places_dataset.class_to_idx
     new_class_names, new_class2idx = [], {}
-    for (class_name, idx) in class2idx.items():
+    for class_name, idx in class2idx.items():
         new_class_name = class_name[3:].replace("/", "_")
         new_class2idx[new_class_name] = idx
     for class_name in class_names:
         new_class_name = class_name[3:].replace("/", "_")
         new_class_names.append(new_class_name)
     return new_class_names, new_class2idx
+
 
 def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
     """
@@ -332,7 +363,11 @@ def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
     # Calculate metrics
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    f1_score = (
+        (2 * precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
     accuracy = (tp + tn) / (tp + fp + fn + tn) if (tp + fp + fn + tn) > 0 else 0
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
 
@@ -342,12 +377,14 @@ def calculate_metrics_from_confusion_matrix(tp, fp, fn, tn):
         "recall": recall,
         "f1_score": f1_score,
         "accuracy": accuracy,
-        "specificity": specificity
+        "specificity": specificity,
     }
+
 
 def calculate_recall(tp, fn):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     return recall
+
 
 def format_evaluation_output(metrics, class_name="All", rejections=None, counts=None):
     # Create a list to hold the formatted strings
@@ -378,7 +415,8 @@ def format_evaluation_output(metrics, class_name="All", rejections=None, counts=
         output_lines.append(f"{'='*40}\n")
 
     # Join all lines into a single string
-    return '\n'.join(output_lines)
+    return "\n".join(output_lines)
+
 
 def format_recall_results(recall_dict):
     """
@@ -400,15 +438,9 @@ def format_recall_results(recall_dict):
 
     # Format each class and its recall value
     for class_name, recall_value in recall_dict.items():
-        output_lines.append(f"{class_name.replace('_', ' ').capitalize():<20}: {recall_value:.2f}")
+        output_lines.append(
+            f"{class_name.replace('_', ' ').capitalize():<20}: {recall_value:.2f}"
+        )
 
     # Join all lines into a single string
-    return '\n'.join(output_lines)
-
-
-
-
-
-
-
-
+    return "\n".join(output_lines)

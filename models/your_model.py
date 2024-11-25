@@ -1,5 +1,6 @@
 from typing import List
 
+
 class YourVLM:
     """
     YourVLM is a Visual Language Model (VLM) that processes images and generates textual predictions based on prompts.

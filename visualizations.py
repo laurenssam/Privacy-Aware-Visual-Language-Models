@@ -11,8 +11,8 @@ from matplotlib.transforms import Affine2D
 
 def create_table_image(model_names, scores, score_names, output_destination):
     fig, ax = plt.subplots(figsize=(24, 12))  # Adjust the figure size as necessary
-    ax.axis('tight')
-    ax.axis('off')
+    ax.axis("tight")
+    ax.axis("off")
 
     # Transpose the data so that models are rows and score names are columns
     table_data = np.array(scores).T.tolist()
@@ -21,25 +21,37 @@ def create_table_image(model_names, scores, score_names, output_destination):
     headers = ["Model"] + score_names
 
     # Add model names as the first column in each row
-    table_data_with_models = [[model_names[i]] + table_data[i] for i in range(len(model_names))]
+    table_data_with_models = [
+        [model_names[i]] + table_data[i] for i in range(len(model_names))
+    ]
 
     # Create the table
-    table = ax.table(cellText=table_data_with_models, colLabels=headers, cellLoc='center', loc='center')
+    table = ax.table(
+        cellText=table_data_with_models,
+        colLabels=headers,
+        cellLoc="center",
+        loc="center",
+    )
 
     # Save the table as an image
-    plt.savefig(output_destination, bbox_inches='tight', pad_inches=0.1, dpi=100)
+    plt.savefig(output_destination, bbox_inches="tight", pad_inches=0.1, dpi=100)
     plt.close()
+
 
 def create_heatmap(model_names, scores, score_names, output_destination, dpi=300):
     # Convert the scores into a DataFrame for easier plotting with seaborn
-    df = pd.DataFrame(np.array(scores).T, index=model_names, columns=score_names).sort_index(axis=0).sort_index(axis=1)
+    df = (
+        pd.DataFrame(np.array(scores).T, index=model_names, columns=score_names)
+        .sort_index(axis=0)
+        .sort_index(axis=1)
+    )
 
     # Create a heatmap
     plt.figure(figsize=(8, 6))  # Set the figure size for better resolution
-    sns.heatmap(df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, linewidths=.5)
+    sns.heatmap(df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, linewidths=0.5)
 
     # Save the heatmap as an image with high DPI
-    plt.savefig(output_destination, bbox_inches='tight', dpi=dpi)
+    plt.savefig(output_destination, bbox_inches="tight", dpi=dpi)
     plt.close()
 
 
@@ -48,10 +60,9 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 
 
-
-
 # In your plotting loop, create a transformation for moving the text
 trans = Affine2D().translate(0, 10)
+
 
 def create_spider_plot(class_names, models, performance_data, location):
     """
@@ -68,26 +79,35 @@ def create_spider_plot(class_names, models, performance_data, location):
     fig, ax = plt.subplots(figsize=(12, 8), subplot_kw=dict(polar=True))
     angles = np.linspace(0, 2 * np.pi, len(class_names), endpoint=False).tolist()
     angles += angles[:1]  # Complete the loop
-    plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
-    performance_data = np.concatenate((performance_data, performance_data[:, [0]]), axis=1)
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = "DejaVu Sans"
+    performance_data = np.concatenate(
+        (performance_data, performance_data[:, [0]]), axis=1
+    )
 
     # Plot data
     max_val = 1
-    color_map = get_cmap('Accent', len(models))
+    color_map = get_cmap("Accent", len(models))
 
     for i, model in enumerate(models):
         color = color_map(i)
         if "chatgpt" in model:
             model = "GPT-4"
-            color = 'red'
+            color = "red"
         elif "tinyllava" in model:
             model = "TinyLLaVa + PrivTune"
-            color = 'blue'
+            color = "blue"
         elif "llava" in model:
             model = "LLaVa-1.5"
-            color = 'green'
-        ax.plot(angles, performance_data[i], color=color, linewidth=2, linestyle='solid', label=model)
+            color = "green"
+        ax.plot(
+            angles,
+            performance_data[i],
+            color=color,
+            linewidth=2,
+            linestyle="solid",
+            label=model,
+        )
         ax.fill(angles, performance_data[i], color=color, alpha=0.1)
 
     # Set the display of grid lines and labels
@@ -118,12 +138,16 @@ def create_spider_plot(class_names, models, performance_data, location):
     #     else:
     #         ax.text(angle, adjustment, label, ha=ha, va=va, fontsize=fontsize, color='black', rotation=0)
 
-
     # Set the radial limits and labels
     ax.set_ylim(0, max_val)
-    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.0], labels=["0.2", "0.4", "0.6", "0.8", "1.0"], angle=90, fontsize=10)
+    ax.set_rgrids(
+        [0.2, 0.4, 0.6, 0.8, 1.0],
+        labels=["0.2", "0.4", "0.6", "0.8", "1.0"],
+        angle=90,
+        fontsize=10,
+    )
     # plt.title(f'AUC-ROC on PrivPix IQ Benchmark', size=15, color='black', y=1.1)
-    plt.legend(loc='upper right', fontsize=fontsize, bbox_to_anchor=(1.4, 1.15))
+    plt.legend(loc="upper right", fontsize=fontsize, bbox_to_anchor=(1.4, 1.15))
     # Save the figure
     plt.savefig(location, dpi=300)
     plt.close()
