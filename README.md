@@ -103,6 +103,23 @@ python run_privacy_analysis_experiment.py --model_name tinyllava --dataset privb
 # Request Access to PrivBech, PrivBench-H & PrivTune
 Due to the sensitive nature of the images in our dataset, access is restricted to researchers for specific research purposes. To request access, please fill out the [dataset access form](https://forms.gle/j4X7KUgL6nxwoBeR8).
 
+# Benchmark Your Own Model on the PrivBench Benchmarks
+
+To benchmark your own model on the PrivBench benchmarks, follow the steps below:
+
+1. **Add Your Model to the Models Folder**  
+   Place your model script in the `models` folder. Use the provided template `your_model.py` as a reference.
+
+2. **Update the `init_model.py`**  
+   Add an entry for your model in the `init_model.py` file to ensure it is recognized by the benchmarking script.
+
+3. **Run the Benchmark**  
+   Execute the following command to run the benchmark on your model:
+
+   ```bash
+   python run_privacy_analysis_experiment.py --model_name your_model --dataset privbench
+
+
 # Citation
 If you use our work in your research, please cite it as follows:
 ```bibtex
