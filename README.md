@@ -81,9 +81,10 @@ Below is a table showcasing the performance scores of different models on the **
 
 *Table: Performance scores of various models on PrivBench and PrivBench-H benchmarks.*
 
+Additionals metrics and evaluations for other VLMS are shown in the paper.
 # How to Run the Code
 
-To replicate our experiments, follow the steps below. Replace the placeholder commands with your specific code as needed.
+To replicate our experiments, follow the steps below.
 
 ```bash
 # Clone the repository
@@ -93,7 +94,7 @@ cd Privacy-Aware-Visual-Language-Models
 # Install dependencies
 pip install -r requirements.txt
 
-# Evaluate the model on PRIVBENCH
+# Evaluate the model on PRIVBENCH, e.g tinyllava
 python run_privacy_analysis_experiment.py --model_name tinyllava --dataset privbench
 
 # Evaluate the model on PRIVBENCH
