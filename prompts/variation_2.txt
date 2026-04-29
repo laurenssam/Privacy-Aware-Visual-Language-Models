@@ -1,0 +1,1 @@
+Determine whether private information appears in the attached image. Output yes or no.

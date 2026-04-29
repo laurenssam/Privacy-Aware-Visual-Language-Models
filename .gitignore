@@ -1,0 +1,18 @@
+models/chatgpt.py
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+
+# Models / binaries
+*.bin
+
+# Data (optional, if large)
+
+# Misc
+*.numbers

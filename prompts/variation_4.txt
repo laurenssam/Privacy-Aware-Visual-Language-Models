@@ -1,0 +1,1 @@
+Analyze the attached image for the presence of private information. Return only a yes or no answer.

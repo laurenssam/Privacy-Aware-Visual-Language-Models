@@ -1,0 +1,3 @@
+Analyze the image provided. Does the attached image contain private information?
+Private classes are: identity documents, identifiable people, tattoos, license plates, nudity, private conversations, fingerprints.
+Answer only with yes or no.
